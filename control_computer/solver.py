@@ -16,7 +16,7 @@ Solution= namedtuple("Solution", ['nb_items', 'capacity','taken', 'value','weigh
 def solve_it(demand_data,capa_data):
 # https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
     demand_matrix = loadtxt(demand_data)
-    capa_vector = np.load(capa_data)
+    capa_vector = loadtxt(capa_data)
     # Modify this code to run your optimization algorithm
     value, weight, taken = pulp_solve(demand_matrix, capa_vector)
 
@@ -28,7 +28,7 @@ def solve_it(demand_data,capa_data):
 
 def pulp_solve(demand_matrix, capa_vector):
     revman = pulp.LpProblem("revman", pulp.LpMaximize)
-    x = [pulp.LpVariable(name="x" + str(it.index),lowBound= 0,cat= pulp.LpContinuous) for it in demand_matrix]
+    x = [pulp.LpVariable(name="x" + str(i),lowBound= 0,cat= pulp.LpContinuous) for it,i in iter(demand_matrix)]
 
     objective = pulp.LpAffineExpression([(x[i.index], i.value) for i in demand_matrix])
     revman.setObjective(objective)
