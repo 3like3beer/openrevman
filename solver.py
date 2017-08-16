@@ -1,7 +1,5 @@
 import pulp
 
-import pulp
-
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
 
