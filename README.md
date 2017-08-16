@@ -8,7 +8,18 @@
 * git clone
 
 ## TODO
-* pulp
+
+activate openrevman
+
+Then (not in script directory)
+* pulp :
+pip install pulp
+
 * ortools
+C:\Users\Maman\Miniconda3>easy_install C:\Users\Maman\Downloads\py3
+_ortools-6.3.4431-py3.6-win-amd64.egg
+
+
 * scipy / optimize
+
 * microservice flask
