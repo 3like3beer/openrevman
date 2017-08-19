@@ -1,11 +1,11 @@
 # openrevman
 
 ## Install Dev Env
-* Dl PyCharm
-* Dl mini conda
+* Dl PyCharm https://www.jetbrains.com/pycharm/download/
+* Dl mini conda https://conda.io/miniconda.html
 * Dl git
-* Install  conda env
-* git clone
+* git clone repo
+* Install  conda env conda env create -f environment.yml
 
 ## TODO
 
