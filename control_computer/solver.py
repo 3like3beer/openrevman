@@ -14,7 +14,7 @@ Solution= namedtuple("Solution", ['nb_items', 'capacity','taken', 'value','weigh
 
 
 def solve_it(demand_data,capa_data):
-# https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
+    # https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
     demand_matrix = loadtxt(demand_data)
     capa_vector = loadtxt(capa_data)
     # Modify this code to run your optimization algorithm
