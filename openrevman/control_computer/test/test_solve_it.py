@@ -10,7 +10,7 @@ class TestSolve_it(TestCase):
         p = StringIO("1 20")
         c = StringIO("1 1")
         dud = StringIO("0 1\n2 3")
-        result = solver.solve_it(demand_data=d, price_data=p,capacity_data=c,demand_utilization_data=dud)
+        result = solver.optimize_controls(demand_data=d, price_data=p,capacity_data=c,demand_utilization_data=dud)
         expected = [3.0, 5.0]
         eq_(expected,result)
 
@@ -22,8 +22,8 @@ class TestSolve_it(TestCase):
         c = StringIO("10")
         dud = StringIO("1\n1\n1\n1\n1")
 
-        result = solver.solve_it(demand_data=d, price_data=p,capacity_data=c,demand_utilization_data=dud)
-        expected = [3.0, 5.0, 2.1, 0.0, 0.0]
+        result = solver.optimize_controls(demand_data=d, price_data=p,capacity_data=c,demand_utilization_data=dud)
+        expected = [3.0, 5.0, 2.0, 0.0, 0.0]
         eq_(expected, result)
 
 

@@ -13,7 +13,7 @@ Product = namedtuple("Product",['index','capacity'])
 Solution= namedtuple("Solution", ['nb_items', 'capacity','taken', 'value','weight'])
 
 
-def solve_it(demand_data, price_data, capacity_data, demand_utilization_data):
+def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):
     # https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
 
     demand_vector = loadtxt(demand_data,ndmin=1)
@@ -36,18 +36,20 @@ def pulp_solve(demand_vector, capacity_vector, price_vector,demand_utilization_m
 
     objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i,d) in enumerate(demand_vector)])
     revman.setObjective(objective)
-    #pulp.LpConstraint
-    #a = [x[i] * d for (i,d) in enumerate(demand_utilization_matrix)]
-    #print ([x[i] * d for (i,d) in enumerate(demand_utilization_matrix)])
     for (product_index,capacity) in enumerate(capacity_vector):
-        revman += pulp.lpSum([x[i] * demand_utilization_matrix[i,product_index] for (i,d) in enumerate(demand_vector)]) <= capacity
+        revman.addConstraint(pulp.lpSum([x[i] * demand_utilization_matrix[i,product_index] for (i,d) in enumerate(demand_vector)]) <= capacity,name="Capa_" + str(product_index))
     for (i,demand) in enumerate(demand_vector):
-        revman += (x[i] ) <= demand
+        revman.addConstraint((x[i] ) <= demand,name= "Demand_" + str(i))
 
     revman.solve(pulp.PULP_CBC_CMD())
     revman.writeLP("temp.txt")
     print(pulp.LpStatus[revman.status])
     accepted_demand = [i.value() for i in x]
     print(accepted_demand)
+
+    bp = [revman.constraints.get("Capa_" + str(i)).pi for (i,capacity) in enumerate(capacity_vector)]
+    print (bp)
+    # for name, c in revman.constraints.items():
+    #     print (name, ":", c, "\t", c.pi, "\t\t", c.slack)
     return accepted_demand
 
