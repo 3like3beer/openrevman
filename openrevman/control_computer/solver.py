@@ -18,8 +18,9 @@ def solve_it(demand_data, price_data, capacity_data, demand_utilization_data):
 
     demand_vector = loadtxt(demand_data)
     price_vector = loadtxt(price_data)
-    capacity_vector = loadtxt(capacity_data)
-    demand_utilization_matrix  = loadtxt(demand_utilization_data)
+    capacity_vector = loadtxt(fname=capacity_data,ndmin=1)
+    print (len(capacity_vector))
+    demand_utilization_matrix  = loadtxt(demand_utilization_data,ndmin=2)
 
     # run optimization algorithm
     value = pulp_solve(demand_vector,capacity_vector, price_vector, demand_utilization_matrix)
