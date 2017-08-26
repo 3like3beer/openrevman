@@ -16,8 +16,8 @@ Solution= namedtuple("Solution", ['nb_items', 'capacity','taken', 'value','weigh
 def solve_it(demand_data, price_data, capacity_data, demand_utilization_data):
     # https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
 
-    demand_vector = loadtxt(demand_data)
-    price_vector = loadtxt(price_data)
+    demand_vector = loadtxt(demand_data,ndmin=1)
+    price_vector = loadtxt(price_data,ndmin=1)
     capacity_vector = loadtxt(fname=capacity_data,ndmin=1)
     print (len(capacity_vector))
     demand_utilization_matrix  = loadtxt(demand_utilization_data,ndmin=2)
@@ -26,7 +26,7 @@ def solve_it(demand_data, price_data, capacity_data, demand_utilization_data):
     value = pulp_solve(demand_vector,capacity_vector, price_vector, demand_utilization_matrix)
 
     # prepare the solution in the specified output format
-    output_data = str(value) + ' ' + str(0) + '\n'
+    output_data = value
     return output_data
 
 
