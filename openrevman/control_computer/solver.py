@@ -18,9 +18,12 @@ def optimize_controls(demand_data, price_data, capacity_data, demand_utilization
 
     demand_vector = loadtxt(demand_data,ndmin=1)
     price_vector = loadtxt(price_data,ndmin=1)
+    assert price_vector.shape[0] == demand_vector.shape[0]
+
     capacity_vector = loadtxt(fname=capacity_data,ndmin=1)
-    print (len(capacity_vector))
     demand_utilization_matrix  = loadtxt(demand_utilization_data,ndmin=2)
+    assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
+    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
 
     # run optimization algorithm
     value = pulp_solve(demand_vector,capacity_vector, price_vector, demand_utilization_matrix)
