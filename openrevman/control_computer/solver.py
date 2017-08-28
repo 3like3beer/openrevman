@@ -1,22 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from tkinter.tix import Control
 
 import pulp
-from numpy import matrix
-from collections import namedtuple
 
 from numpy import loadtxt
-import numpy as np
 
-Item = namedtuple("Demand", ['index', 'value', 'used_product'])
-Product = namedtuple("Product",['index','capacity'])
-Solution= namedtuple("Solution", ['nb_items', 'capacity','taken', 'value','weight'])
 
 class Controls:
     def __init__(self, accepted_demand,product_bid_prices):
         self.accepted_demand = accepted_demand
         self.product_bid_prices = product_bid_prices
+
 
 class Solver:
     def __init__(self, optimizer):
