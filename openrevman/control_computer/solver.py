@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from tkinter.tix import Control
 
 import pulp
 from numpy import matrix
@@ -11,6 +12,18 @@ import numpy as np
 Item = namedtuple("Demand", ['index', 'value', 'used_product'])
 Product = namedtuple("Product",['index','capacity'])
 Solution= namedtuple("Solution", ['nb_items', 'capacity','taken', 'value','weight'])
+
+class Controls:
+    def __init__(self, accepted_demand,product_bid_prices):
+        self.accepted_demand = accepted_demand
+        self.product_bid_prices = product_bid_prices
+
+class Solver:
+    def __init__(self, optimizer):
+        self.optimizer = optimizer
+
+    def optimize_controls(self,demand_data, price_data, capacity_data, demand_utilization_data):
+        return optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
 
 
 def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):
@@ -50,9 +63,6 @@ def pulp_solve(demand_vector, capacity_vector, price_vector,demand_utilization_m
     accepted_demand = [i.value() for i in x]
     print(accepted_demand)
 
-    bp = [revman.constraints.get("Capa_" + str(i)).pi for (i,capacity) in enumerate(capacity_vector)]
-    print (bp)
-    # for name, c in revman.constraints.items():
-    #     print (name, ":", c, "\t", c.pi, "\t\t", c.slack)
-    return accepted_demand
+    product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i,capacity) in enumerate(capacity_vector)]
+    return Controls(accepted_demand,product_bid_prices)
 
