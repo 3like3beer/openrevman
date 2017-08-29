@@ -26,8 +26,6 @@ class TestSolve_it(TestCase):
     def test_solve_it_single_ressource(self):
         d = StringIO("3 5 4 2 10")
         p = StringIO("10 5 4 2 1")
-        c = StringIO("10 10")
-        dud = StringIO("1 1\n1 1\n1 1\n1 1\n1 1")
         c = StringIO("10")
         dud = StringIO("1\n1\n1\n1\n1")
 
