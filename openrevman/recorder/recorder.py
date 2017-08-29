@@ -1,3 +1,7 @@
 class Recorder:
     def __init__(self):
-        self.tot = 0
+        self.records = []
+
+    def record(self,new_record):
+        self.records.append(new_record)
+
