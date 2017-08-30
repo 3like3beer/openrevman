@@ -4,10 +4,11 @@
 import pulp
 
 from numpy import loadtxt
+from numpy import ndarray
 
 
 class Controls:
-    def __init__(self, accepted_demand,product_bid_prices):
+    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray) -> object:
         self.accepted_demand = accepted_demand
         self.product_bid_prices = product_bid_prices
 
@@ -21,7 +22,6 @@ class Solver:
 
 
 def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):
-    # https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html
 
     demand_vector = loadtxt(demand_data,ndmin=1)
     price_vector = loadtxt(price_data,ndmin=1)
