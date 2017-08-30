@@ -13,6 +13,13 @@ class TestAvailabilityProcessor(TestCase):
         print(ap.get_price(demand_vector=demand))
         eq_(ap.get_price(demand_vector=demand),3.0)
 
+    def test_get_price_multi_product(self):
+        controls = Controls(accepted_demand=[1, 1], product_bid_prices=[1,4])
+        ap = AvailabilityProcessor(controls=controls, demand_utilization_matrix=ones((2, 2)))
+        demand = array([0, 2])
+        print(ap.get_price(demand_vector=demand))
+        eq_(ap.get_price(demand_vector=demand), 10.0)
+
     def test_is_available(self):
         controls = Controls(accepted_demand=[1, 1], product_bid_prices=[3])
         ap = AvailabilityProcessor(controls=controls, demand_utilization_matrix=ones((2, 1)))
