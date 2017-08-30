@@ -2,15 +2,27 @@ from unittest import TestCase
 
 from openrevman.availability_processor.availability_processor import AvailabilityProcessor
 from openrevman.control_computer.solver import Controls
-from numpy import array
-
+from numpy import array,ones
+from nose.tools import eq_
 
 class TestAvailabilityProcessor(TestCase):
     def test_get_price(self):
         controls = Controls(accepted_demand=[1,1], product_bid_prices= [3])
-        ap = AvailabilityProcessor(controls=controls)
-        demand = array([0,1] )
-        assert self.fail()
+        ap = AvailabilityProcessor(controls=controls, demand_utilization_matrix=ones((2,1)))
+        demand = array([0,1])
+        print(ap.get_price(demand_vector=demand))
+        eq_(ap.get_price(demand_vector=demand),3.0)
 
     def test_is_available(self):
-        self.fail()
+        controls = Controls(accepted_demand=[1, 1], product_bid_prices=[3])
+        ap = AvailabilityProcessor(controls=controls, demand_utilization_matrix=ones((2, 1)))
+        demand = array([0, 1])
+        eq_(ap.is_available(demand_vector=demand), True)
+
+
+    def test_is_available_not_true(self):
+        controls = Controls(accepted_demand=[1, 1], product_bid_prices=[3])
+        ap = AvailabilityProcessor(controls=controls, demand_utilization_matrix=ones((2, 1)))
+        demand = array([2, 1])
+        eq_(ap.is_available(demand_vector=demand), False)
+
