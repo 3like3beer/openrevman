@@ -3,12 +3,11 @@
 
 import pulp
 
-from numpy import loadtxt
-from numpy import ndarray
+from numpy import array, loadtxt, ndarray
 
 
 class Controls:
-    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray) -> object:
+    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray):
         self.accepted_demand = accepted_demand
         self.product_bid_prices = product_bid_prices
 
@@ -59,4 +58,4 @@ def pulp_solve(demand_vector, capacity_vector, price_vector, demand_utilization_
     print(accepted_demand)
 
     product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i, capacity) in enumerate(capacity_vector)]
-    return Controls(accepted_demand, product_bid_prices)
+    return Controls(array(accepted_demand), array(product_bid_prices))
