@@ -15,9 +15,11 @@ class Controls:
 class Solver:
     def __init__(self, optimizer):
         self.optimizer = optimizer
+        self.controls = None
 
     def optimize_controls(self, demand_data, price_data, capacity_data, demand_utilization_data):
-        return optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
+        self.controls = optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
+        return self.controls
 
 
 def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):

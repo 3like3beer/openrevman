@@ -25,4 +25,6 @@ class TestSystem(TestCase):
     def test_update_controls(self):
         self.forecaster.update_parameter()
         self.solver.optimize_controls()
+        self.ap.controls = self.solver.controls
+
         pass
