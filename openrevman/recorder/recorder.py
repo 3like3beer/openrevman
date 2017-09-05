@@ -4,3 +4,7 @@ class Recorder:
 
     def record(self, new_record):
         self.records.append(new_record)
+
+    @property
+    def get_records(self):
+        return self.records

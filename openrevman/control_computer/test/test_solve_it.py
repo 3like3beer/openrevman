@@ -1,8 +1,6 @@
 from io import StringIO
 from unittest import TestCase
 
-from nose.tools import eq_
-
 from openrevman.control_computer import solver
 from numpy import array, array_equal
 
