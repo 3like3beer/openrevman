@@ -5,10 +5,6 @@ from openrevman.control_computer.solver import Controls
 
 class AvailabilityProcessor:
     def __init__(self, controls: Controls, demand_utilization_matrix) -> None:
-        """
-
-        :type controls: Controls
-        """
         self.controls = controls
         self.demand_utilization_matrix = demand_utilization_matrix
 
