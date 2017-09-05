@@ -1,6 +1,8 @@
 from io import StringIO
 from unittest import TestCase
+
 from nose.tools import eq_
+
 from openrevman.control_computer import solver
 
 
@@ -29,8 +31,6 @@ class TestSolve_it(TestCase):
         c = StringIO("10")
         dud = StringIO("1\n1\n1\n1\n1")
 
-        result = solver.optimize_controls(demand_data=d, price_data=p,capacity_data=c,demand_utilization_data=dud)
+        result = solver.optimize_controls(demand_data=d, price_data=p, capacity_data=c, demand_utilization_data=dud)
         expected = [3.0, 5.0, 2.0, 0.0, 0.0]
         eq_(expected, result.accepted_demand)
-
-
