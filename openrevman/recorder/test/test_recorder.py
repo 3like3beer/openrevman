@@ -1,7 +1,8 @@
 from unittest import TestCase
-from openrevman.recorder.recorder import Record
+
 from numpy import array, array_equal
-from nose.tools import eq_
+
+from openrevman.recorder.recorder import Record
 
 
 class TestRecord(TestCase):

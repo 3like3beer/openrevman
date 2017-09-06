@@ -1,5 +1,6 @@
 from numpy import array
 
+
 class Recorder:
     def __init__(self):
         self.records = []
@@ -31,8 +32,6 @@ class Record:
         self.type = record_type
         self.demand = demand
 
-    def get_demand_vector(self,demand_size):
-        res = [1 if x in self.demand else 0 for x in range(1,1+demand_size)]
-        return array(res )
-
-
+    def get_demand_vector(self, demand_size):
+        res = [1 if x in self.demand else 0 for x in range(1, 1 + demand_size)]
+        return array(res)
