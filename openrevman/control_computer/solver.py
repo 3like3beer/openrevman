@@ -7,9 +7,10 @@ from numpy import array, loadtxt, ndarray
 
 
 class Controls:
-    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray):
+    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray, expected_revenue: float):
         self.accepted_demand = accepted_demand
         self.product_bid_prices = product_bid_prices
+        self.expected_revenue = expected_revenue
 
 
 class Solver:
@@ -20,6 +21,25 @@ class Solver:
     def optimize_controls(self, demand_data, price_data, capacity_data, demand_utilization_data):
         self.controls = optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
         return self.controls
+
+    def optimize_controls_multi_period(self, price_data, demand_data_list, capacity_data, demand_utilization_data, eps):
+        for demand_data in demand_data_list:
+            if not (self.controls):
+                ctrl2 = self.optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
+                if self.compare_with_period(ctrl2, 0.1):
+                    self.blinde_control(ctrl2)
+            else:
+                self.controls = self.optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
+        return self.controls
+
+    def compare_periods(self, ctrl2, eps):
+        rev1 = self.controls.expected_revenue
+        if rev1 - ctrl2.expected_revenue > rev1 * eps:
+            return True
+        return False
+
+    def blinde_control(ctrl2):
+        pass
 
 
 def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):
@@ -60,4 +80,6 @@ def pulp_solve(demand_vector, capacity_vector, price_vector, demand_utilization_
     print(accepted_demand)
 
     product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i, capacity) in enumerate(capacity_vector)]
-    return Controls(array(accepted_demand), array(product_bid_prices))
+    expected_revenue = pulp.value(revman.objective)
+    print(expected_revenue)
+    return Controls(array(accepted_demand), array(product_bid_prices), expected_revenue)
