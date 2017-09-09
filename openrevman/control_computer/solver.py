@@ -19,6 +19,8 @@ class Solver:
         self.controls = None
 
     def optimize_controls(self, demand_data, price_data, capacity_data, demand_utilization_data):
+        # separate product (same network iif used by same demand)
+        # Finding disjoint Paths in Graphs or cliques
         self.controls = optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
         return self.controls
 
