@@ -24,7 +24,7 @@ class Solver:
 
     def optimize_controls_multi_period(self, price_data, demand_data_list, capacity_data, demand_utilization_data, eps):
         for demand_data in demand_data_list:
-            if not (self.controls):
+            if not self.controls:
                 ctrl2 = self.optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
                 if self.compare_with_period(ctrl2, 0.1):
                     self.blinde_control(ctrl2)
