@@ -13,6 +13,26 @@ class Controls:
         self.expected_revenue = expected_revenue
 
 
+class Problem:
+    def __init__(self, demand_data, price_data, capacity_data, demand_utilization_data):
+        self.demand_data = demand_data
+        self.price_data = price_data
+        self.capacity_data = capacity_data
+        self.demand_utilization_data = demand_utilization_data
+
+    def get_subproblems(self):
+        root = {}
+        for (demand_index, demand) in enumerate(self.demand_data):
+            if not root[demand_index]:
+                current_root = demand_index
+                get_next_demand = 1
+        pass
+
+    def add_demand(self, problem, demand_index):
+        self.demand_data.add(problem.demand_data[demand_index])
+        pass
+
+
 class Solver:
     def __init__(self, optimizer):
         self.optimizer = optimizer
