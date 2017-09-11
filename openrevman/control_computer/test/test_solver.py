@@ -1,7 +1,7 @@
 from io import StringIO
 from unittest import TestCase
 
-from numpy import array, array_equal
+from numpy import array, array_equal, loadtxt
 
 from openrevman.control_computer import solver
 
@@ -36,3 +36,16 @@ class TestSolver(TestCase):
         expected = array([3.0, 5.0, 2.0, 0.0, 0.0])
         self.assertTrue(array_equal(expected, result.accepted_demand))
         self.assertTrue(array_equal(63.0, result.expected_revenue))
+
+    def test_problem_get_correlations(self):
+        demand_data = StringIO("1 1 1 1")
+        price_data = StringIO("10 20 20 5")
+        capacity_data = StringIO("1 1 1")
+        demand_utilization_data = StringIO("0 1\n1 0\n1 1\n0 0")
+        d = loadtxt(demand_data, ndmin=1)
+        p = loadtxt(price_data, ndmin=1)
+        c = loadtxt(fname=capacity_data, ndmin=1)
+        dud = loadtxt(demand_utilization_data, ndmin=2)
+
+        problem = solver.Problem(demand_data=d, price_data=p, capacity_data=c, demand_utilization_data=dud)
+        print(problem.demand_correlations)

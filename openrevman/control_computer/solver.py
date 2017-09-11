@@ -3,7 +3,7 @@
 
 import pulp
 
-from numpy import array, loadtxt, ndarray
+from numpy import array, loadtxt, ndarray, dot
 
 
 class Controls:
@@ -19,18 +19,23 @@ class Problem:
         self.price_data = price_data
         self.capacity_data = capacity_data
         self.demand_utilization_data = demand_utilization_data
+        self.demand_correlations = self.get_demand_correlations()
+
+    def get_demand_correlations(self):
+        return dot(self.demand_utilization_data, self.demand_utilization_data.transpose())
 
     def get_subproblems(self, eps=0.1):
         subproblems = {}
         for (demand_index, demand) in enumerate(self.demand_data):
             if not subproblems[demand_index]:
                 subproblems[demand_index] = self.create_subproblem(self, demand_index)
-                for (product_index, product_utilization) in enumerate(self.demand_utilization_data[demand_index]):
-                    if product_utilization * demand > eps:
-                        # BFS
-                        next_demand = 1
-                    if next_demand:
-                        subproblems[demand_index].add_demand(self, demand_index, eps)
+                for (neighbour_index, neighbour_value) in enumerate(self.demand_correlations[demand_index]):
+                    if not subproblems[neighbour_index]:
+                        if neighbour_value * demand > eps:
+                            # BFS
+                            next_demand = neighbour_index
+                        if next_demand:
+                            subproblems[demand_index].add_demand(self, demand_index, eps)
         pass
 
     def add_demand(self, problem, demand_index, eps):
@@ -44,6 +49,16 @@ class Problem:
         subproblem = Problem([], [], [], demand_utilization_data=self.demand_utilization_data)
         subproblem.add_demand(self, demand_index)
         return subproblem
+
+
+def dfs(graph, start):
+    visited, stack = set(), [start]
+    while stack:
+        vertex = stack.pop()
+        if vertex not in visited:
+            visited.add(vertex)
+            stack.extend(graph[vertex] - visited)
+    return visited
 
 
 class Solver:
