@@ -20,17 +20,30 @@ class Problem:
         self.capacity_data = capacity_data
         self.demand_utilization_data = demand_utilization_data
 
-    def get_subproblems(self):
-        root = {}
+    def get_subproblems(self, eps=0.1):
+        subproblems = {}
         for (demand_index, demand) in enumerate(self.demand_data):
-            if not root[demand_index]:
-                current_root = demand_index
-                get_next_demand = 1
+            if not subproblems[demand_index]:
+                subproblems[demand_index] = self.create_subproblem(self, demand_index)
+                for (product_index, product_utilization) in enumerate(self.demand_utilization_data[demand_index]):
+                    if product_utilization * demand > eps:
+                        # BFS
+                        next_demand = 1
+                    if next_demand:
+                        subproblems[demand_index].add_demand(self, demand_index, eps)
         pass
 
-    def add_demand(self, problem, demand_index):
-        self.demand_data.add(problem.demand_data[demand_index])
+    def add_demand(self, problem, demand_index, eps):
+        if problem.demand_data[demand_index] > eps:
+            self.demand_data.add(problem.demand_data[demand_index])
+            self.price_data.add(problem.price_data[demand_index])
+            self.demand_utilization_data.ad(problem.demand_utilization_data[demand_index])
         pass
+
+    def create_subproblem(self, demand_index):
+        subproblem = Problem([], [], [], demand_utilization_data=self.demand_utilization_data)
+        subproblem.add_demand(self, demand_index)
+        return subproblem
 
 
 class Solver:
