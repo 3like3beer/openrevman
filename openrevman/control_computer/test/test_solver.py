@@ -48,4 +48,20 @@ class TestSolver(TestCase):
         dud = loadtxt(demand_utilization_data, ndmin=2)
 
         problem = solver.Problem(demand_data=d, price_data=p, capacity_data=c, demand_utilization_data=dud)
+        print("correlations")
         print(problem.demand_correlations)
+
+    def test_problem_get_subproblems(self):
+        demand_data = StringIO("1 1 1 1")
+        price_data = StringIO("10 20 20 5")
+        capacity_data = StringIO("1 1 1")
+        demand_utilization_data = StringIO("0 1\n1 0\n1 1\n0 0")
+        d = loadtxt(demand_data, ndmin=1)
+        p = loadtxt(price_data, ndmin=1)
+        c = loadtxt(fname=capacity_data, ndmin=1)
+        dud = loadtxt(demand_utilization_data, ndmin=2)
+
+        problem = solver.Problem(demand_data=d, price_data=p, capacity_data=c, demand_utilization_data=dud)
+        print("subproblems")
+
+        print(problem.get_subproblems()[0].demand_data)

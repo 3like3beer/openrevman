@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import pulp
+import collections
 
+import pulp
 from numpy import array, loadtxt, ndarray, dot
+from scipy.sparse import csgraph
 
 
 class Controls:
@@ -25,29 +27,34 @@ class Problem:
         return dot(self.demand_utilization_data, self.demand_utilization_data.transpose())
 
     def get_subproblems(self, eps=0.1):
-        subproblems = {}
-        for (demand_index, demand) in enumerate(self.demand_data):
-            if not subproblems[demand_index]:
-                subproblems[demand_index] = self.create_subproblem(self, demand_index)
-                for (neighbour_index, neighbour_value) in enumerate(self.demand_correlations[demand_index]):
-                    if not subproblems[neighbour_index]:
-                        if neighbour_value * demand > eps:
-                            # BFS
-                            next_demand = neighbour_index
-                        if next_demand:
-                            subproblems[demand_index].add_demand(self, demand_index, eps)
-        pass
+        subproblems = []
+        labels = csgraph.connected_components(self.demand_correlations, directed=False)[1]
+        split_index = collections.Counter(labels).values()
+        prev = 0
+        for i in split_index:
+            demand_data = self.demand_data[prev:i]
+            price_data = self.price_data[prev:i]
+            capacity_data = self.capacity_data[prev:i]
+            subproblems.append(Problem(demand_data, price_data, capacity_data, self.demand_utilization_data))
+
+            # for (label_index, label) in enumerate(labels):
+            #         if not last_label == label:
+            #             last_label = label
+            #             subproblems[label] = self.create_subproblem(label_index, eps)
+            #         else:
+            #             subproblems[label].add_demand(self, label_index, eps)
+        return subproblems
 
     def add_demand(self, problem, demand_index, eps):
         if problem.demand_data[demand_index] > eps:
-            self.demand_data.add(problem.demand_data[demand_index])
-            self.price_data.add(problem.price_data[demand_index])
-            self.demand_utilization_data.ad(problem.demand_utilization_data[demand_index])
+            self.demand_data.append(problem.demand_data[demand_index])
+            self.price_data.append(problem.price_data[demand_index])
+            self.demand_utilization_data.append(problem.demand_utilization_data[demand_index])
         pass
 
-    def create_subproblem(self, demand_index):
+    def create_subproblem(self, demand_index, eps):
         subproblem = Problem([], [], [], demand_utilization_data=self.demand_utilization_data)
-        subproblem.add_demand(self, demand_index)
+        subproblem.add_demand(self, demand_index, eps)
         return subproblem
 
 
