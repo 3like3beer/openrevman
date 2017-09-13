@@ -16,15 +16,15 @@ class Controls:
 
 
 class Problem:
-    def __init__(self, demand_data, price_data, capacity_data, demand_utilization_data):
-        self.demand_data = demand_data
-        self.price_data = price_data
-        self.capacity_data = capacity_data
-        self.demand_utilization_data = demand_utilization_data
+    def __init__(self, demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
+        self.demand_vector = demand_vector
+        self.price_vector = price_vector
+        self.capacity_vector = capacity_vector
+        self.demand_utilization_matrix = demand_utilization_matrix
         self.demand_correlations = self.get_demand_correlations()
 
     def get_demand_correlations(self):
-        return dot(self.demand_utilization_data, self.demand_utilization_data.transpose())
+        return dot(self.demand_utilization_matrix, self.demand_utilization_matrix.transpose())
 
     def get_subproblems(self, eps=0.1):
         subproblems = []
@@ -32,40 +32,15 @@ class Problem:
         split_index = collections.Counter(labels).values()
         prev = 0
         for i in split_index:
-            demand_data = self.demand_data[prev:i]
-            price_data = self.price_data[prev:i]
-            capacity_data = self.capacity_data[prev:i]
-            subproblems.append(Problem(demand_data, price_data, capacity_data, self.demand_utilization_data))
-
-            # for (label_index, label) in enumerate(labels):
-            #         if not last_label == label:
-            #             last_label = label
-            #             subproblems[label] = self.create_subproblem(label_index, eps)
-            #         else:
-            #             subproblems[label].add_demand(self, label_index, eps)
+            demand_vector = self.demand_vector[prev:prev + i]
+            price_vector = self.price_vector[prev:prev + i]
+            capacity_vector = self.capacity_vector
+            demand_utilization_matrix = self.demand_utilization_matrix
+            subproblems.append(
+                Problem(demand_vector=demand_vector, price_vector=price_vector, capacity_vector=capacity_vector,
+                        demand_utilization_matrix=demand_utilization_matrix))
+            prev = i
         return subproblems
-
-    def add_demand(self, problem, demand_index, eps):
-        if problem.demand_data[demand_index] > eps:
-            self.demand_data.append(problem.demand_data[demand_index])
-            self.price_data.append(problem.price_data[demand_index])
-            self.demand_utilization_data.append(problem.demand_utilization_data[demand_index])
-        pass
-
-    def create_subproblem(self, demand_index, eps):
-        subproblem = Problem([], [], [], demand_utilization_data=self.demand_utilization_data)
-        subproblem.add_demand(self, demand_index, eps)
-        return subproblem
-
-
-def dfs(graph, start):
-    visited, stack = set(), [start]
-    while stack:
-        vertex = stack.pop()
-        if vertex not in visited:
-            visited.add(vertex)
-            stack.extend(graph[vertex] - visited)
-    return visited
 
 
 class Solver:
@@ -73,10 +48,15 @@ class Solver:
         self.optimizer = optimizer
         self.controls = None
 
-    def optimize_controls(self, demand_data, price_data, capacity_data, demand_utilization_data):
+    def optimize_controls2(self, demand_data, price_data, capacity_data, demand_utilization_data):
+        self.controls = pulp_solve(demand_data, price_data, capacity_data, demand_utilization_data)
+        return self.controls
+
+    def optimize_controls(self, problem):
         # separate product (same network iif used by same demand)
         # Finding disjoint Paths in Graphs or cliques
-        self.controls = optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
+        self.controls = self.optimize_controls2(problem.demand_vector, problem.price_vector, problem.capacity_vector,
+                                                problem.demand_utilization_matrix)
         return self.controls
 
     def optimize_controls_multi_period(self, price_data, demand_data_list, capacity_data, demand_utilization_data, eps):
@@ -100,27 +80,32 @@ class Solver:
 
 
 def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):
-    demand_vector = loadtxt(demand_data, ndmin=1)
-    price_vector = loadtxt(price_data, ndmin=1)
-    assert price_vector.shape[0] == demand_vector.shape[0]
+    problem = create_problem(demand_data, price_data, capacity_data, demand_utilization_data)
 
-    capacity_vector = loadtxt(fname=capacity_data, ndmin=1)
-    demand_utilization_matrix = loadtxt(demand_utilization_data, ndmin=2)
-    assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
-    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
-
+    local_solver = Solver(None)
     # run optimization algorithm
-    value = pulp_solve(demand_vector, capacity_vector, price_vector, demand_utilization_matrix)
+    value = local_solver.optimize_controls(problem)
 
     # prepare the solution in the specified output format
     output_data = value
     return output_data
 
 
-def pulp_solve(demand_vector, capacity_vector, price_vector, demand_utilization_matrix):
+def create_problem(demand_data, price_data, capacity_data, demand_utilization_data):
+    demand_vector = loadtxt(demand_data, ndmin=1)
+    price_vector = loadtxt(price_data, ndmin=1)
+    assert price_vector.shape[0] == demand_vector.shape[0]
+    capacity_vector = loadtxt(fname=capacity_data, ndmin=1)
+    demand_utilization_matrix = loadtxt(demand_utilization_data, ndmin=2)
+    assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
+    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
+    return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix)
+
+
+def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
     revman = pulp.LpProblem("revman", pulp.LpMaximize)
     x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in enumerate(demand_vector)]
-
+    print(price_vector)
     objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in enumerate(demand_vector)])
     revman.setObjective(objective)
     for (product_index, capacity) in enumerate(capacity_vector):
