@@ -22,6 +22,10 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda env create -f orm.yml
   - source activate openrevman
+# command to run tests
+script:
+  - pytest 
+  
 branches:
   only:
     - master
