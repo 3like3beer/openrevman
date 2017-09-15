@@ -12,7 +12,7 @@ dependencies:
 - pip:
   - protobuf==3.2.0
   - pulp==1.6.8
-  - py3-ortools=6
+  - py3-ortools>=6.3
   - pyparsing==2.2.0
   - six==1.10.0
 prefix: openrevman
