@@ -96,7 +96,7 @@ def optimize_controls(demand_data, price_data, capacity_data, demand_utilization
     return output_data
 
 
-def create_problem(demand_data, price_data, capacity_data, demand_utilization_data):
+def create_problem(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
     demand_vector = loadtxt(demand_data, ndmin=1)
     price_vector = loadtxt(price_data, ndmin=1)
     assert price_vector.shape[0] == demand_vector.shape[0]
@@ -104,7 +104,11 @@ def create_problem(demand_data, price_data, capacity_data, demand_utilization_da
     demand_utilization_matrix = loadtxt(demand_utilization_data, ndmin=2)
     assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
     assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
-    return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix)
+    if demand_profile_data:
+        demand_profile = loadtxt(demand_profile_data, ndmin=1)
+    else:
+        demand_profile = None
+    return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix, demand_profile)
 
 
 def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
