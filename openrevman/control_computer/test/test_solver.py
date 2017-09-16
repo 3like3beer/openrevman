@@ -68,7 +68,7 @@ class TestSolver(TestCase):
             this_solver.optimize_controls(problem.get_subproblems()[0]).expected_revenue +
             this_solver.optimize_controls(problem.get_subproblems()[1]).expected_revenue)
 
-    def test_problem_get_subproblems(self):
+    def test_problem_optimize_controls_multi_period(self):
         d = StringIO("1 2 2 4")
         p = StringIO("10 20 20 5")
         c = StringIO("1 1 1")
