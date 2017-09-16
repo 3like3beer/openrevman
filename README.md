@@ -1,5 +1,8 @@
 # openrevman
 
+## Current coverqge
+[![Coverage Status](https://coveralls.io/repos/github/3like3beer/openrevman/badge.svg?branch=master)](https://coveralls.io/github/3like3beer/openrevman?branch=master)
+
 ## Install Dev Env
 * Dl PyCharm https://www.jetbrains.com/pycharm/download/
 * Dl mini conda https://conda.io/miniconda.html
