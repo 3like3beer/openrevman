@@ -16,11 +16,12 @@ class Controls:
 
 
 class Problem:
-    def __init__(self, demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
+    def __init__(self, demand_vector, price_vector, capacity_vector, demand_utilization_matrix, demand_profile=None):
         self.demand_vector = demand_vector
         self.price_vector = price_vector
         self.capacity_vector = capacity_vector
         self.demand_utilization_matrix = demand_utilization_matrix
+        self.demand_profile = demand_profile
         self.demand_correlations = self.get_demand_correlations()
 
     def get_demand_correlations(self):
@@ -59,14 +60,18 @@ class Solver:
                                                 problem.demand_utilization_matrix)
         return self.controls
 
-    def optimize_controls_multi_period(self, price_data, demand_data_list, capacity_data, demand_utilization_data, eps):
-        for demand_data in demand_data_list:
-            if not self.controls:
-                ctrl2 = self.optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
-                if self.compare_with_period(ctrl2, 0.1):
-                    self.blinde_control(ctrl2)
-            else:
-                self.controls = self.optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data)
+    def optimize_controls_multi_period(self, problem, eps):
+        if problem.demand_profile:
+            for demand_data in problem.demand_profile:
+                if not self.controls:
+                    ctrl2 = self.optimize_controls2(demand_data, problem.price_vector, problem.capacity_vector,
+                                                    problem.demand_utilization_matrix)
+                    if self.compare_periods(ctrl2, 0.1):
+                        self.blinde_control(ctrl2)
+                else:
+                    self.controls = self.optimize_controls(problem)
+        else:
+            self.controls = self.optimize_controls(problem)
         return self.controls
 
     def compare_periods(self, ctrl2, eps):
