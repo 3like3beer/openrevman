@@ -68,25 +68,13 @@ class TestSolver(TestCase):
             this_solver.optimize_controls(problem.get_subproblems()[0]).expected_revenue +
             this_solver.optimize_controls(problem.get_subproblems()[1]).expected_revenue)
 
-    def test_problem_optimize_controls_multi_period(self):
+    def test_problem_optimize_controls_multi_period_two_profiles(self):
         d = StringIO("1 2 2 4")
         p = StringIO("10 20 20 5")
         c = StringIO("1 1 1")
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
-
-        problem = solver.create_problem(d, p, c, dud)
-        this_solver = solver.Solver(None)
-
-        eq_(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
-            this_solver.optimize_controls(problem).expected_revenue)
-
-    def test_problem_optimize_controls_multi_period_one_profile(self):
-        d = StringIO("1 2 2 4")
-        p = StringIO("10 20 20 5")
-        c = StringIO("1 1 1")
-        dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
-
-        problem = solver.create_problem(d, p, c, dud, d)
+        dp = StringIO("1 2 2 4\n0 0 0 0")
+        problem = solver.create_problem(d, p, c, dud, dp)
         this_solver = solver.Solver(None)
 
         eq_(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
