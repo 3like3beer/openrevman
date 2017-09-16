@@ -24,7 +24,7 @@ install:
   - source activate openrevman
 # command to run tests
 script:
-  - pytest 
+  - nosetests -v --with-coverage --cover-tests
   
 branches:
   only:

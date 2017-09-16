@@ -9,7 +9,7 @@ from scipy.sparse import csgraph
 
 
 class Controls:
-    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray, expected_revenue: float):
+    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray, expected_revenue: float = None):
         self.accepted_demand = accepted_demand
         self.product_bid_prices = product_bid_prices
         self.expected_revenue = expected_revenue
