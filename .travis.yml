@@ -25,7 +25,8 @@ install:
 # command to run tests
 script:
   - nosetests -v --with-coverage --cover-tests
-  
+after_success:
+  - coveralls
 branches:
   only:
     - master
