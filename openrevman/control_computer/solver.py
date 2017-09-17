@@ -63,25 +63,27 @@ class Solver:
     def optimize_controls_multi_period(self, problem, eps):
         if len(problem.demand_profile.shape) > 1:
             for demand_data in problem.demand_profile:
-                if not self.controls:
-                    ctrl2 = self.optimize_controls2(demand_data, problem.price_vector, problem.capacity_vector,
-                                                    problem.demand_utilization_matrix)
-                    if self.compare_periods(ctrl2, 0.1):
-                        self.blinde_control(ctrl2)
+                if self.controls:
+                    new_control = pulp_solve(demand_data, problem.price_vector, problem.capacity_vector,
+                                             problem.demand_utilization_matrix)
+                    if self.is_new_ctrl_more_profitable(new_control, 0.1):
+                        self.blinde_control(new_control, eps)
                 else:
                     self.controls = self.optimize_controls(problem)
         else:
             self.controls = self.optimize_controls(problem)
         return self.controls
 
-    def compare_periods(self, ctrl2, eps):
+    def is_new_ctrl_more_profitable(self, new_control, eps):
         rev1 = self.controls.expected_revenue
-        if rev1 - ctrl2.expected_revenue > rev1 * eps:
+        if new_control.expected_revenue - rev1 > rev1 * eps:
             return True
         return False
 
-    def blinde_control(ctrl2):
-        pass
+    def blinde_control(self, new_control, eps):
+        self.controls.accepted_demand = self.controls.accepted_demand * eps
+        self.controls.product_bid_prices = self.controls.product_bid_prices / eps
+        self.controls.expected_revenue = new_control.expected_revenue
 
 
 def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):

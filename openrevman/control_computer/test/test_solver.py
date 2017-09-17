@@ -1,7 +1,7 @@
 from io import StringIO
 from unittest import TestCase
 
-from nose.tools import eq_
+from nose.tools import eq_, assert_greater_equal
 from numpy import array, array_equal, loadtxt
 
 from openrevman.control_computer import solver
@@ -93,13 +93,13 @@ class TestSolver(TestCase):
             this_solver.optimize_controls(problem).expected_revenue)
 
     def test_problem_optimize_controls_multi_period_second_profile_add_val(self):
-        d = StringIO("1 2 2 4")
+        d = StringIO("1 0 2 4")
         p = StringIO("10 20 20 5")
         c = StringIO("1 1 1")
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
-        dp = StringIO("0 0 1 0\n1 2 2 4")
+        dp = StringIO("0 0 0 0\n1 2 2 4")
         problem = solver.create_problem(d, p, c, dud, dp)
         this_solver = solver.Solver(None)
 
-        eq_(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
-            this_solver.optimize_controls(problem).expected_revenue)
+        assert_greater_equal(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
+                             this_solver.optimize_controls(problem).expected_revenue)
