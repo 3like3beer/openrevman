@@ -11,7 +11,7 @@ class Recorder:
 
     @property
     def get_bookings(self):
-        return self.filter_by_type("bookings")
+        return self.filter_by_type("Booking")
 
     def filter_by_type(self, value) -> object:
         for record in self.records:
