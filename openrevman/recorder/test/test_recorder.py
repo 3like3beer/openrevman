@@ -1,12 +1,14 @@
 from unittest import TestCase
 
-from numpy import array, array_equal
-
-from openrevman.recorder.recorder import Record
+from openrevman.recorder.recorder import Record, Recorder
 
 
 class TestRecord(TestCase):
-    def test_get_demand_vector(self):
-        record = Record(demand=[1, 4], record_type="Booking")
-        expected = array([1, 0, 0, 1, 0])
-        self.assertTrue(array_equal(expected, record.get_demand_vector(5)))
+    def test_get_records(self):
+        recorder = Recorder()
+        record = Record(products=[1, 4], record_type="Booking")
+        self.assertTrue(recorder.get_records == [])
+        recorder.record(record)
+        self.assertEqual(record, recorder.get_records[0])
+        for booking in recorder.get_bookings:
+            self.assertEqual(record, booking)

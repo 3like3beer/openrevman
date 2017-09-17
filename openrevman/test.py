@@ -4,21 +4,28 @@ from openrevman.availability_processor.availability_processor import Availabilit
 from openrevman.control_computer.solver import Solver
 from openrevman.forecaster.forecaster import Forecaster
 from openrevman.inventory.inventory import Inventory
+from openrevman.recorder.recorder import Record
+from openrevman.recorder.recorder import Recorder
 
 
 class TestSystem(TestCase):
     def setUp(self):
         self.forecaster = Forecaster()
         self.solver = Solver(None)
-        self.inventory = Inventory()
-        self.ap = AvailabilityProcessor(None, self.inventory.demand_utilization_matrix)
+        self.inventory = Inventory(products=["p1", "p2"], remaining_capacity=[10, 10])
+        self.recorder = Recorder()
+        self.ap = AvailabilityProcessor(None, None)
 
     def test_get_availability(self):
         # return self.ap.is_available()
         pass
 
     def test_book(self):
-        pass
+        booking = Record(record_type="Booking", products=["p1"])
+        self.recorder.record(booking)
+        self.inventory.update_inventory(bookings=[booking])
+        assert self.inventory.product_inventory["p1"] == 9
+        assert self.inventory.product_inventory["p2"] == 10
 
     def test_get_price(self):
         pass
