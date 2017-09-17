@@ -27,6 +27,8 @@ class TestSystem(TestCase):
         assert self.inventory.product_inventory["p1"] == 9
         assert self.inventory.product_inventory["p2"] == 10
 
+        self.forecaster.update_parameter()
+
     def test_get_price(self):
         pass
 
