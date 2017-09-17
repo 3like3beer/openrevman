@@ -61,7 +61,7 @@ class Solver:
         return self.controls
 
     def optimize_controls_multi_period(self, problem, eps):
-        if problem.demand_profile.shape[1] > 1:
+        if len(problem.demand_profile.shape) > 1:
             for demand_data in problem.demand_profile:
                 if not self.controls:
                     ctrl2 = self.optimize_controls2(demand_data, problem.price_vector, problem.capacity_vector,
