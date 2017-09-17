@@ -4,12 +4,13 @@
 import collections
 
 import pulp
-from numpy import array, loadtxt, ndarray, dot
+from numpy import array, loadtxt, dot
+from pandas import DataFrame, read_table
 from scipy.sparse import csgraph
 
 
 class Controls:
-    def __init__(self, accepted_demand: ndarray, product_bid_prices: ndarray, expected_revenue: float = None):
+    def __init__(self, accepted_demand: DataFrame, product_bid_prices: DataFrame, expected_revenue: float = None):
         self.accepted_demand = accepted_demand
         self.product_bid_prices = product_bid_prices
         self.expected_revenue = expected_revenue
@@ -99,13 +100,14 @@ def optimize_controls(demand_data, price_data, capacity_data, demand_utilization
 
 
 def create_problem(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
-    demand_vector = loadtxt(demand_data, ndmin=1)
-    price_vector = loadtxt(price_data, ndmin=1)
+    demand_vector = read_table(demand_data, delim_whitespace=True, header=None)
+    price_vector = read_table(price_data, delim_whitespace=True, header=None)
     assert price_vector.shape[0] == demand_vector.shape[0]
-    capacity_vector = loadtxt(fname=capacity_data, ndmin=1)
-    demand_utilization_matrix = loadtxt(demand_utilization_data, ndmin=2)
-    assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
-    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
+    capacity_vector = read_table(capacity_data, delim_whitespace=True, header=None)
+    demand_utilization_matrix = read_table(demand_utilization_data, delim_whitespace=True, header=None)
+    print(demand_utilization_matrix.shape)
+    assert demand_utilization_matrix.shape[0] == demand_vector.shape[1]
+    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[1]
     if demand_profile_data:
         demand_profile = loadtxt(demand_profile_data, ndmin=1)
     else:
