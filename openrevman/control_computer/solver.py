@@ -100,14 +100,29 @@ def optimize_controls(demand_data, price_data, capacity_data, demand_utilization
 
 
 def create_problem(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
-    demand_vector = read_table(demand_data, delim_whitespace=True, header=None)
-    price_vector = read_table(price_data, delim_whitespace=True, header=None)
+    demand_vector = loadtxt(demand_data, ndmin=1)
+    price_vector = loadtxt(price_data, ndmin=1)
     assert price_vector.shape[0] == demand_vector.shape[0]
-    capacity_vector = read_table(capacity_data, delim_whitespace=True, header=None)
+    capacity_vector = loadtxt(fname=capacity_data, ndmin=1)
+    demand_utilization_matrix = loadtxt(demand_utilization_data, ndmin=2)
+    assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
+    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
+    if demand_profile_data:
+        demand_profile = loadtxt(demand_profile_data, ndmin=1)
+    else:
+        demand_profile = None
+    return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix, demand_profile)
+
+
+def create_problem_from_df(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
+    demand_vector = DataFrame.transpose(read_table(demand_data, delim_whitespace=True, header=None))
+    price_vector = DataFrame.transpose(read_table(price_data, delim_whitespace=True, header=None))
+    assert price_vector.shape[0] == demand_vector.shape[0]
+    capacity_vector = DataFrame.transpose(read_table(capacity_data, delim_whitespace=True, header=None))
     demand_utilization_matrix = read_table(demand_utilization_data, delim_whitespace=True, header=None)
     print(demand_utilization_matrix.shape)
-    assert demand_utilization_matrix.shape[0] == demand_vector.shape[1]
-    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[1]
+    assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
+    assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
     if demand_profile_data:
         demand_profile = loadtxt(demand_profile_data, ndmin=1)
     else:

@@ -8,9 +8,17 @@ from openrevman.control_computer import solver
 
 
 class TestSolver(TestCase):
+    def setUp(self):
+        self.three_id_demand = StringIO("1 1 1")
+        self.three_prices_latest_large = StringIO("10 10 30")
+        self.three_prices_lower_than_two_first = StringIO("10 20 20")
+        self.three_id_capacity = StringIO("1 1 1")
+        self.two_products_with_capacity_of_one = StringIO("1 1")
+        self.demand_utilization_data_three_demand_last_use_two_products = StringIO("0 1\n1 0\n1 1")
+
     def test_solver_simple_od_od_better(self):
-        d = StringIO("1 1 1")
-        p = StringIO("10 10 30")
+        d = self.three_id_demand
+        p = self.three_prices_latest_large
         c = StringIO("1 1")
         dud = StringIO("0 1\n1 0\n1 1")
         result = solver.optimize_controls(demand_data=d, price_data=p, capacity_data=c, demand_utilization_data=dud)
@@ -19,8 +27,8 @@ class TestSolver(TestCase):
         self.assertTrue(array_equal(30.0, result.expected_revenue))
 
     def test_solver_simple_od_leg_better(self):
-        d = StringIO("1 1 1")
-        p = StringIO("10 20 20")
+        d = self.three_id_demand
+        p = self.three_prices_lower_than_two_first
         c = StringIO("1 1")
         dud = StringIO("0 1\n1 0\n1 1")
         result = solver.optimize_controls(demand_data=d, price_data=p, capacity_data=c, demand_utilization_data=dud)
@@ -41,7 +49,7 @@ class TestSolver(TestCase):
     def test_problem_get_correlations(self):
         demand_data = StringIO("1 1 1 1")
         price_data = StringIO("10 20 20 5")
-        capacity_data = StringIO("1 1 1")
+        capacity_data = self.three_id_capacity
         demand_utilization_data = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         d = loadtxt(demand_data, ndmin=1)
         p = loadtxt(price_data, ndmin=1)
@@ -55,13 +63,13 @@ class TestSolver(TestCase):
     def test_problem_get_subproblems(self):
         d = StringIO("1 2 2 4")
         p = StringIO("10 20 20 5")
-        c = StringIO("1 1 1")
+        c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
 
         problem = solver.create_problem(d, p, c, dud)
         eq_(problem.get_subproblems().__len__(), 2)
-        eq_(problem.get_subproblems()[1].demand_vector, [4])
-        eq_(problem.get_subproblems()[1].price_vector, [5])
+        eq_(problem.get_subproblems()[1].demand_vector[0], 4)
+        eq_(problem.get_subproblems()[1].price_vector[0], 5)
         this_solver = solver.Solver(None)
 
         eq_(this_solver.optimize_controls(problem).expected_revenue,
@@ -71,7 +79,7 @@ class TestSolver(TestCase):
     def test_problem_optimize_controls_multi_period_two_profiles(self):
         d = StringIO("1 2 2 4")
         p = StringIO("10 20 20 5")
-        c = StringIO("1 1 1")
+        c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("1 2 2 4\n0 0 0 0")
         problem = solver.create_problem(d, p, c, dud, dp)
@@ -83,7 +91,7 @@ class TestSolver(TestCase):
     def test_problem_optimize_controls_multi_period_one_profile(self):
         d = StringIO("1 2 2 4")
         p = StringIO("10 20 20 5")
-        c = StringIO("1 1 1")
+        c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("1 2 2 4")
         problem = solver.create_problem(d, p, c, dud, dp)
@@ -95,7 +103,7 @@ class TestSolver(TestCase):
     def test_problem_optimize_controls_multi_period_second_profile_add_val(self):
         d = StringIO("1 0 2 4")
         p = StringIO("10 20 20 5")
-        c = StringIO("1 1 1")
+        c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("0 0 0 0\n1 2 2 4")
         problem = solver.create_problem(d, p, c, dud, dp)
