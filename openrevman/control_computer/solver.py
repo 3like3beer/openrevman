@@ -114,7 +114,7 @@ def create_problem(demand_data, price_data, capacity_data, demand_utilization_da
     return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix, demand_profile)
 
 
-def create_problem_from_df(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
+def create_problem_with_df(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
     demand_vector = DataFrame.transpose(read_table(demand_data, delim_whitespace=True, header=None))
     price_vector = DataFrame.transpose(read_table(price_data, delim_whitespace=True, header=None))
     assert price_vector.shape[0] == demand_vector.shape[0]

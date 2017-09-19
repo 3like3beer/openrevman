@@ -111,3 +111,12 @@ class TestSolver(TestCase):
 
         assert_greater_equal(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
                              this_solver.optimize_controls(problem).expected_revenue)
+
+    def test_create_problem_with_df(self):
+        d = StringIO("1 0 2 4")
+        p = StringIO("10 20 20 5")
+        c = self.three_id_capacity
+        dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
+        dp = StringIO("0 0 0 0\n1 2 2 4")
+        problem = solver.create_problem_with_df(d, p, c, dud, dp)
+        eq_(10, problem.price_vector.ix[0, 0])
