@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from openrevman.availability_processor.availability_processor import AvailabilityProcessor
-from openrevman.control_computer.solver import Solver, create_problem
+from openrevman.control_computer.solver import Solver, create_problem_with_df
 from openrevman.forecaster.forecaster import Forecaster
 from openrevman.inventory.inventory import Inventory
 from openrevman.recorder.recorder import Record
@@ -33,10 +33,10 @@ class TestSystem(TestCase):
         pass
 
     def test_update_controls(self):
-        demand_data, demand_utilization_data, price_data = self.forecaster.forecast()
+        demand_data, demand_utilization_data = self.forecaster.forecast()
         capacity_data = self.inventory.get_capacity()
 
-        problem = create_problem(demand_data, price_data, capacity_data, demand_utilization_data)
+        problem = create_problem_with_df(demand_data, capacity_data, demand_utilization_data)
         self.solver.optimize_controls(problem)
         # self.ap.controls = self.solver.controls
         pass

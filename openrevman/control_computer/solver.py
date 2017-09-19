@@ -114,12 +114,21 @@ def create_problem(demand_data, price_data, capacity_data, demand_utilization_da
     return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix, demand_profile)
 
 
-def create_problem_with_df(demand_data, price_data, capacity_data, demand_utilization_data, demand_profile_data=None):
-    demand_vector = DataFrame.transpose(read_table(demand_data, delim_whitespace=True, header=None))
-    price_vector = DataFrame.transpose(read_table(price_data, delim_whitespace=True, header=None))
-    assert price_vector.shape[0] == demand_vector.shape[0]
-    capacity_vector = DataFrame.transpose(read_table(capacity_data, delim_whitespace=True, header=None))
-    demand_utilization_matrix = read_table(demand_utilization_data, delim_whitespace=True, header=None)
+def to_data_frame(data):
+    df = DataFrame.transpose(read_table(data, delim_whitespace=True, header=None))
+    df.columns = [(col + 1) for col in df.columns]
+    return df
+
+
+def to_data_frame2(data):
+    df = DataFrame(read_table(data, delim_whitespace=True, header=None))
+    return df
+
+
+def create_problem_with_df(demand_data, capacity_data, demand_utilization_data, demand_profile_data=None):
+    demand_vector = to_data_frame(demand_data)
+    capacity_vector = to_data_frame(capacity_data)
+    demand_utilization_matrix = to_data_frame2(demand_utilization_data)
     print(demand_utilization_matrix.shape)
     assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
     assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
@@ -127,7 +136,8 @@ def create_problem_with_df(demand_data, price_data, capacity_data, demand_utiliz
         demand_profile = loadtxt(demand_profile_data, ndmin=1)
     else:
         demand_profile = None
-    return Problem(demand_vector, price_vector, capacity_vector, demand_utilization_matrix, demand_profile)
+    return Problem(demand_vector.ix[:, 1], demand_vector.ix[:, 2], capacity_vector, demand_utilization_matrix.ix[:, :],
+                   demand_profile)
 
 
 def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
@@ -136,9 +146,9 @@ def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_
     print(price_vector)
     objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in enumerate(demand_vector)])
     revman.setObjective(objective)
-    for (product_index, capacity) in enumerate(capacity_vector):
+    for (product_index, capacity) in enumerate(capacity_vector.ix[:, 1]):
         revman.addConstraint(pulp.lpSum(
-            [x[i] * demand_utilization_matrix[i, product_index] for (i, d) in enumerate(demand_vector)]) <= capacity,
+            [x[i] * demand_utilization_matrix.ix[i, product_index] for (i, d) in enumerate(demand_vector)]) <= capacity,
                              name="Capa_" + str(product_index))
     for (i, demand) in enumerate(demand_vector):
         revman.addConstraint((x[i]) <= demand, name="Demand_" + str(i))
