@@ -4,7 +4,7 @@
 import collections
 
 import pulp
-from numpy import array, loadtxt, dot
+from numpy import array, dot
 from pandas import DataFrame, read_table
 from scipy.sparse import csgraph
 
@@ -63,9 +63,10 @@ class Solver:
 
     def optimize_controls_multi_period(self, problem, eps):
         if len(problem.demand_profile.shape) > 1:
-            for demand_data in problem.demand_profile:
+            for period in problem.demand_profile.columns:
                 if self.controls:
-                    new_control = pulp_solve(demand_data, problem.price_vector, problem.capacity_vector,
+                    new_control = pulp_solve(problem.demand_profile.ix[:, period], problem.price_vector,
+                                             problem.capacity_vector,
                                              problem.demand_utilization_matrix)
                     if self.is_new_ctrl_more_profitable(new_control, 0.1):
                         self.blinde_control(new_control, eps)
@@ -87,18 +88,6 @@ class Solver:
         self.controls.expected_revenue = new_control.expected_revenue
 
 
-def optimize_controls(demand_data, price_data, capacity_data, demand_utilization_data):
-    problem = create_problem(demand_data, price_data, capacity_data, demand_utilization_data)
-
-    local_solver = Solver(None)
-    # run optimization algorithm
-    value = local_solver.optimize_controls(problem)
-
-    # prepare the solution in the specified output format
-    output_data = value
-    return output_data
-
-
 def to_data_frame(data):
     df = DataFrame.transpose(read_table(data, delim_whitespace=True, header=None))
     df.columns = [(col + 1) for col in df.columns]
@@ -118,25 +107,28 @@ def create_problem_with_df(demand_data, capacity_data, demand_utilization_data, 
     assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
     assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
     if demand_profile_data:
-        demand_profile = loadtxt(demand_profile_data, ndmin=1)
+        demand_profile = to_data_frame(demand_profile_data)
+        assert demand_profile.shape[0] == demand_vector.shape[0]
     else:
         demand_profile = None
-    return Problem(demand_vector.ix[:, 1], demand_vector.ix[:, 2], capacity_vector, demand_utilization_matrix.ix[:, :],
+    return Problem(demand_vector.ix[:, 1], demand_vector.ix[:, 2], capacity_vector,
+                   demand_utilization_matrix.ix[:, :],
                    demand_profile)
 
 
 def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
     revman = pulp.LpProblem("revman", pulp.LpMaximize)
-    x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in enumerate(demand_vector)]
+    x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
     print(price_vector)
-    objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in enumerate(demand_vector)])
+    objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in demand_vector.iteritems()])
     revman.setObjective(objective)
-    for (product_index, capacity) in enumerate(capacity_vector.ix[:, 1]):
+    for (product_index, capacity) in (capacity_vector.iterrows()):
         revman.addConstraint(pulp.lpSum(
-            [x[i] * demand_utilization_matrix.ix[i, product_index] for (i, d) in enumerate(demand_vector)]) <= capacity,
+            [x[i] * demand_utilization_matrix.ix[i, product_index] for (i, d) in demand_vector.iteritems()]) <=
+                             capacity,
                              name="Capa_" + str(product_index))
-    for (i, demand) in enumerate(demand_vector):
-        revman.addConstraint((x[i]) <= demand, name="Demand_" + str(i))
+    for (demand_index, demand) in (demand_vector.iteritems()):
+        revman.addConstraint((x[demand_index]) <= demand, name="Demand_" + str(demand_index))
 
     revman.solve(pulp.PULP_CBC_CMD())
     revman.writeLP("temp.txt")
@@ -144,7 +136,7 @@ def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_
     accepted_demand = [i.value() for i in x]
     print(accepted_demand)
 
-    product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i, capacity) in enumerate(capacity_vector)]
+    product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i, c) in (capacity_vector.iterrows())]
     expected_revenue = pulp.value(revman.objective)
     print(expected_revenue)
     return Controls(array(accepted_demand), array(product_bid_prices), expected_revenue)
