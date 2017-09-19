@@ -26,8 +26,11 @@ class TestSystem(TestCase):
         self.inventory.update_inventory(bookings=[booking])
         assert self.inventory.product_inventory["p1"] == 9
         assert self.inventory.product_inventory["p2"] == 10
+        pass
 
+    def test_updateparameter(self):
         self.forecaster.update_parameter()
+        pass
 
     def test_get_price(self):
         pass
