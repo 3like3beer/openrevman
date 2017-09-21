@@ -100,10 +100,19 @@ def to_data_frame2(data):
 
 
 def create_problem_with_df(demand_data, capacity_data, demand_utilization_data, demand_profile_data=None):
+    demand_vector, capacity_vector, demand_profile, demand_utilization_matrix = load_data_to_df(capacity_data,
+                                                                                                demand_data,
+                                                                                                demand_profile_data,
+                                                                                                demand_utilization_data)
+    return Problem(demand_vector.ix[:, 1], demand_vector.ix[:, 2], capacity_vector,
+                   demand_utilization_matrix.ix[:, :],
+                   demand_profile)
+
+
+def load_data_to_df(capacity_data, demand_data, demand_profile_data, demand_utilization_data):
     demand_vector = to_data_frame(demand_data)
     capacity_vector = to_data_frame(capacity_data)
     demand_utilization_matrix = to_data_frame2(demand_utilization_data)
-    print(demand_utilization_matrix.shape)
     assert demand_utilization_matrix.shape[0] == demand_vector.shape[0]
     assert demand_utilization_matrix.shape[1] == capacity_vector.shape[0]
     if demand_profile_data:
@@ -111,9 +120,7 @@ def create_problem_with_df(demand_data, capacity_data, demand_utilization_data, 
         assert demand_profile.shape[0] == demand_vector.shape[0]
     else:
         demand_profile = None
-    return Problem(demand_vector.ix[:, 1], demand_vector.ix[:, 2], capacity_vector,
-                   demand_utilization_matrix.ix[:, :],
-                   demand_profile)
+    return demand_vector, capacity_vector, demand_profile, demand_utilization_matrix
 
 
 def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
