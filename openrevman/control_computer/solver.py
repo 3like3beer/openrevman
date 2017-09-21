@@ -50,15 +50,9 @@ class Solver:
         self.optimizer = optimizer
         self.controls = None
 
-    def optimize_controls2(self, demand_data, price_data, capacity_data, demand_utilization_data):
-        self.controls = pulp_solve(demand_data, price_data, capacity_data, demand_utilization_data)
-        return self.controls
-
     def optimize_controls(self, problem):
-        # separate product (same network iif used by same demand)
-        # Finding disjoint Paths in Graphs or cliques
-        self.controls = self.optimize_controls2(problem.demand_vector, problem.price_vector, problem.capacity_vector,
-                                                problem.demand_utilization_matrix)
+        self.controls = pulp_solve(problem.demand_vector, problem.price_vector, problem.capacity_vector,
+                                   problem.demand_utilization_matrix)
         return self.controls
 
     def optimize_controls_multi_period(self, problem, eps):
