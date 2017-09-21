@@ -55,8 +55,8 @@ class TestSolver(TestCase):
         capacity_data = self.three_id_capacity
         demand_utilization_data = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         problem = solver.create_problem_with_df(demand_data, capacity_data, demand_utilization_data)
-        print("correlations")
-        print(problem.demand_correlations)
+        correlations = [[1, 0, 1, 0], [0, 1, 1, 0], [1, 1, 2, 0], [0, 0, 0, 1]]
+        self.assertTrue(array_equal(correlations, problem.demand_correlations))
 
     def test_problem_get_subproblems(self):
         d = StringIO("1 2 2 4\n10 20 20 5")

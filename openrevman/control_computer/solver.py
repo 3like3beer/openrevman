@@ -126,7 +126,6 @@ def load_data_to_df(capacity_data, demand_data, demand_profile_data, demand_util
 def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
     revman = pulp.LpProblem("revman", pulp.LpMaximize)
     x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
-    print(price_vector)
     objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in demand_vector.iteritems()])
     revman.setObjective(objective)
     for (product_index, capacity) in (capacity_vector.iterrows()):
@@ -139,11 +138,9 @@ def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_
 
     revman.solve(pulp.PULP_CBC_CMD())
     revman.writeLP("temp.txt")
-    print(pulp.LpStatus[revman.status])
+    # print(pulp.LpStatus[revman.status])
     accepted_demand = [i.value() for i in x]
-    print(accepted_demand)
 
     product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i, c) in (capacity_vector.iterrows())]
     expected_revenue = pulp.value(revman.objective)
-    print(expected_revenue)
     return Controls(array(accepted_demand), array(product_bid_prices), expected_revenue)
