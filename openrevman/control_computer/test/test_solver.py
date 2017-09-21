@@ -20,7 +20,7 @@ class TestSolver(TestCase):
         d = StringIO("1 1 1\n10 10 30")
         c = StringIO("1 1")
         dud = StringIO("0 1\n1 0\n1 1")
-        problem = solver.create_problem_with_df(d, c, dud)
+        problem = solver.create_problem_with_data(d, c, dud)
         this_solver = solver.Solver(None)
         result = this_solver.optimize_controls(problem)
         expected = array([0.0, 0.0, 1.0])
@@ -31,7 +31,7 @@ class TestSolver(TestCase):
         d = StringIO("1 1 1\n10 20 20")
         c = StringIO("1 1")
         dud = StringIO("0 1\n1 0\n1 1")
-        problem = solver.create_problem_with_df(d, c, dud)
+        problem = solver.create_problem_with_data(d, c, dud)
         this_solver = solver.Solver(None)
         result = this_solver.optimize_controls(problem)
         expected = array([1.0, 1.0, 0.0])
@@ -42,7 +42,7 @@ class TestSolver(TestCase):
         d = StringIO("3 5 4 2 10\n10 5 4 2 1")
         c = StringIO("10")
         dud = StringIO("1\n1\n1\n1\n1")
-        problem = solver.create_problem_with_df(d, c, dud)
+        problem = solver.create_problem_with_data(d, c, dud)
         this_solver = solver.Solver(None)
         result = this_solver.optimize_controls(problem)
 
@@ -54,7 +54,7 @@ class TestSolver(TestCase):
         demand_data = StringIO("1 1 1 1\n10 20 20 5")
         capacity_data = self.three_id_capacity
         demand_utilization_data = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
-        problem = solver.create_problem_with_df(demand_data, capacity_data, demand_utilization_data)
+        problem = solver.create_problem_with_data(demand_data, capacity_data, demand_utilization_data)
         correlations = [[1, 0, 1, 0], [0, 1, 1, 0], [1, 1, 2, 0], [0, 0, 0, 1]]
         self.assertTrue(array_equal(correlations, problem.demand_correlations))
 
@@ -63,7 +63,7 @@ class TestSolver(TestCase):
         c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
 
-        problem = solver.create_problem_with_df(d, c, dud)
+        problem = solver.create_problem_with_data(d, c, dud)
         eq_(problem.get_subproblems().__len__(), 2)
         eq_(problem.get_subproblems()[1].demand_vector.ix[3], 4)
         eq_(problem.get_subproblems()[1].price_vector.ix[3], 5)
@@ -78,7 +78,7 @@ class TestSolver(TestCase):
         c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("1 2 2 4\n0 0 0 0")
-        problem = solver.create_problem_with_df(d, c, dud, dp)
+        problem = solver.create_problem_with_data(d, c, dud, dp)
         this_solver = solver.Solver(None)
 
         eq_(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
@@ -89,7 +89,7 @@ class TestSolver(TestCase):
         c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("1 2 2 4")
-        problem = solver.create_problem_with_df(d, c, dud, dp)
+        problem = solver.create_problem_with_data(d, c, dud, dp)
         this_solver = solver.Solver(None)
 
         eq_(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
@@ -101,16 +101,16 @@ class TestSolver(TestCase):
         c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("0 0 0 0\n1 2 2 4")
-        problem = solver.create_problem_with_df(d, c, dud, dp)
+        problem = solver.create_problem_with_data(d, c, dud, dp)
         this_solver = solver.Solver(None)
 
         assert_greater_equal(this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue,
                              this_solver.optimize_controls(problem).expected_revenue)
 
-    def test_create_problem_with_df(self):
+    def test_create_problem_with_data(self):
         d = StringIO("1 0 2 4\n10 20 20 5")
         c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("0 0 0 0\n1 2 2 4")
-        problem = solver.create_problem_with_df(d, c, dud, dp)
+        problem = solver.create_problem_with_data(d, c, dud, dp)
         eq_(10, problem.price_vector.ix[0, 0])

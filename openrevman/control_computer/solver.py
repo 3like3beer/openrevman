@@ -99,7 +99,7 @@ def to_data_frame2(data):
     return df
 
 
-def create_problem_with_df(demand_data, capacity_data, demand_utilization_data, demand_profile_data=None):
+def create_problem_with_data(demand_data, capacity_data, demand_utilization_data, demand_profile_data=None):
     demand_vector, capacity_vector, demand_profile, demand_utilization_matrix = load_data_to_df(capacity_data,
                                                                                                 demand_data,
                                                                                                 demand_profile_data,
@@ -124,23 +124,61 @@ def load_data_to_df(capacity_data, demand_data, demand_profile_data, demand_util
 
 
 def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_matrix):
-    revman = pulp.LpProblem("revman", pulp.LpMaximize)
-    x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
-    objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in demand_vector.iteritems()])
-    revman.setObjective(objective)
+    revman = create_problem()
+    x = create_variables(demand_vector)
+    set_objective(demand_vector, price_vector, revman, x)
+    add_product_constraints(capacity_vector, demand_utilization_matrix, demand_vector, revman, x)
+    add_demand_constraints(demand_vector, revman, x)
+
+    solve_problem(revman)
+
+    accepted_demand = get_accepted_demand(x)
+    product_bid_prices = get_bid_prices(capacity_vector, revman)
+    expected_revenue = get_expected_revenue(revman)
+
+    return Controls(array(accepted_demand), array(product_bid_prices), expected_revenue)
+
+
+def solve_problem(revman):
+    revman.solve(pulp.PULP_CBC_CMD())
+    # revman.writeLP("temp.txt")
+    # print(pulp.LpStatus[revman.status])
+
+
+def create_problem():
+    return pulp.LpProblem("revman", pulp.LpMaximize)
+
+
+def get_expected_revenue(revman):
+    return pulp.value(revman.objective)
+
+
+def get_accepted_demand(x):
+    return [i.value() for i in x]
+
+
+def get_bid_prices(capacity_vector, revman):
+    return [revman.constraints.get("Capa_" + str(i)).pi for (i, c) in (capacity_vector.iterrows())]
+
+
+def add_demand_constraints(demand_vector, revman, x):
+    for (demand_index, demand) in (demand_vector.iteritems()):
+        revman.addConstraint((x[demand_index]) <= demand, name="Demand_" + str(demand_index))
+
+
+def add_product_constraints(capacity_vector, demand_utilization_matrix, demand_vector, revman, x):
     for (product_index, capacity) in (capacity_vector.iterrows()):
         revman.addConstraint(pulp.lpSum(
             [x[i] * demand_utilization_matrix.ix[i, product_index] for (i, d) in demand_vector.iteritems()]) <=
                              capacity,
                              name="Capa_" + str(product_index))
-    for (demand_index, demand) in (demand_vector.iteritems()):
-        revman.addConstraint((x[demand_index]) <= demand, name="Demand_" + str(demand_index))
 
-    revman.solve(pulp.PULP_CBC_CMD())
-    revman.writeLP("temp.txt")
-    # print(pulp.LpStatus[revman.status])
-    accepted_demand = [i.value() for i in x]
 
-    product_bid_prices = [revman.constraints.get("Capa_" + str(i)).pi for (i, c) in (capacity_vector.iterrows())]
-    expected_revenue = pulp.value(revman.objective)
-    return Controls(array(accepted_demand), array(product_bid_prices), expected_revenue)
+def set_objective(demand_vector, price_vector, revman, x):
+    objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in demand_vector.iteritems()])
+    revman.setObjective(objective)
+
+
+def create_variables(demand_vector):
+    x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
+    return x
