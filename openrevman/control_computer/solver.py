@@ -103,6 +103,29 @@ def create_problem_with_data(demand_data, capacity_data, demand_utilization_data
                    demand_profile)
 
 
+def merge_sub_problems(subproblems):
+    first_time = True
+    for problem in subproblems:
+        if first_time:
+            demand_vector = problem.demand_vector
+            price_vector = problem.price_vector
+            capacity_vector = problem.capacity_vector
+            demand_utilization_matrix = problem.demand_utilization_matrix
+            demand_profile = problem.demand_profile
+            first_time = False
+        else:
+            demand_vector = demand_vector.append(problem.demand_vector)
+            price_vector = price_vector.append(problem.price_vector)
+            capacity_vector = capacity_vector.append(problem.capacity_vector)
+            demand_utilization_matrix = demand_utilization_matrix.append(problem.demand_utilization_matrix)
+            if demand_profile:
+                demand_profile = demand_profile.append(problem.demand_profile)
+
+    return Problem(demand_vector=demand_vector, price_vector=price_vector,
+                   capacity_vector=capacity_vector, demand_profile=demand_profile,
+                   demand_utilization_matrix=demand_utilization_matrix)
+
+
 def load_data_to_df(capacity_data, demand_data, demand_profile_data, demand_utilization_data):
     demand_vector = to_data_frame(demand_data)
     capacity_vector = to_data_frame(capacity_data)
