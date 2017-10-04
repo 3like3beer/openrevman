@@ -2,7 +2,8 @@ from io import StringIO
 from unittest import TestCase
 
 from nose.tools import eq_, assert_greater_equal
-from numpy import array, array_equal
+from numpy import array_equal
+from pandas import DataFrame
 
 from openrevman.control_computer import solver
 from openrevman.control_computer.solver import merge_controls
@@ -24,7 +25,7 @@ class TestSolver(TestCase):
         problem = solver.create_problem_with_data(d, c, dud)
         this_solver = solver.Solver(None)
         result = this_solver.optimize_controls(problem)
-        expected = array([0.0, 0.0, 1.0])
+        expected = DataFrame({'accepted_demand': [0.0, 0.0, 1.0]})
         self.assertTrue(array_equal(expected, result.accepted_demand))
         self.assertTrue(array_equal(30.0, result.expected_revenue))
 
@@ -35,7 +36,7 @@ class TestSolver(TestCase):
         problem = solver.create_problem_with_data(d, c, dud)
         this_solver = solver.Solver(None)
         result = this_solver.optimize_controls(problem)
-        expected = array([1.0, 1.0, 0.0])
+        expected = DataFrame({'accepted_demand': [1.0, 1.0, 0.0]})
         self.assertTrue(array_equal(expected, result.accepted_demand))
         self.assertTrue(array_equal(30.0, result.expected_revenue))
 
@@ -47,7 +48,7 @@ class TestSolver(TestCase):
         this_solver = solver.Solver(None)
         result = this_solver.optimize_controls(problem)
 
-        expected = array([3.0, 5.0, 2.0, 0.0, 0.0])
+        expected = DataFrame({'accepted_demand': [3.0, 5.0, 2.0, 0.0, 0.0]})
         self.assertTrue(array_equal(expected, result.accepted_demand))
         self.assertTrue(array_equal(63.0, result.expected_revenue))
 
@@ -124,7 +125,9 @@ class TestSolver(TestCase):
         this_solver = solver.Solver(None)
 
         result1 = this_solver.optimize_controls_multi_period(problem, 0.1)
-
+        for p in problem.get_subproblems():
+            temp = this_solver.optimize_controls_multi_period(p, 0.1)
+            temp = None
         sub_controls_list = [this_solver.optimize_controls_multi_period(p, 0.1)
                              for p in problem.get_subproblems()]
         result2 = merge_controls(sub_controls_list)

@@ -4,7 +4,7 @@
 import collections
 
 import pulp
-from numpy import array, dot
+from numpy import dot
 from pandas import DataFrame, read_table
 from scipy.sparse import csgraph
 
@@ -150,7 +150,7 @@ def pulp_solve(demand_vector, price_vector, capacity_vector, demand_utilization_
     product_bid_prices = get_bid_prices(capacity_vector, revman)
     expected_revenue = get_expected_revenue(revman)
 
-    return Controls(array(accepted_demand), array(product_bid_prices), expected_revenue)
+    return Controls((accepted_demand), (product_bid_prices), expected_revenue)
 
 
 def solve_problem(revman):
@@ -168,11 +168,12 @@ def get_expected_revenue(revman):
 
 
 def get_accepted_demand(x):
-    return [x[str(i)].value() for i in x]
+    return DataFrame({'accepted_demand': [(x[str(i)].value()) for i in x]})
 
 
 def get_bid_prices(capacity_vector, revman):
-    return [revman.constraints.get("Capa_" + str(i)).pi for (i, c) in (capacity_vector.iterrows())]
+    bid_prices_list = [revman.constraints.get("Capa_" + str(i)).pi for (i, c) in (capacity_vector.iterrows())]
+    return DataFrame({'bid_prices_list': bid_prices_list})
 
 
 def add_demand_constraints(demand_vector, revman, x):
@@ -194,7 +195,6 @@ def set_objective(demand_vector, price_vector, revman, x):
 
 
 def create_variables(demand_vector):
-    # x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
     x = dict([(str(i), pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous)) for (i, t) in
               demand_vector.iteritems()])
     return x
