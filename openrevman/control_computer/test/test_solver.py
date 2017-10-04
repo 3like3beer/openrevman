@@ -118,18 +118,18 @@ class TestSolver(TestCase):
 
     def test_merge_controls(self):
         d = StringIO("1 0 2 4\n10 20 20 5")
-        c = self.three_id_capacity
+        c = StringIO("1 1 1")
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("0 0 0 0\n1 2 2 4")
         problem = solver.create_problem_with_data(d, c, dud, dp)
         this_solver = solver.Solver(None)
 
-        result1 = this_solver.optimize_controls_multi_period(problem, 0.1)
+        result1 = this_solver.optimize_controls_multi_period(problem, 0.1).expected_revenue
+        sub_controls_list = []
         for p in problem.get_subproblems():
-            temp = this_solver.optimize_controls_multi_period(p, 0.1)
-            temp = None
-        sub_controls_list = [this_solver.optimize_controls_multi_period(p, 0.1)
-                             for p in problem.get_subproblems()]
+            sub_solver = solver.Solver(None)
+            sub_controls_list.append(sub_solver.optimize_controls_multi_period(p, 0.1))
+
         result2 = merge_controls(sub_controls_list)
 
-        eq_(result1.expected_revenue, result2.expected_revenue)
+        eq_(result1, result2.expected_revenue)
