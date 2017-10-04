@@ -37,10 +37,13 @@ class Problem:
             demand_vector = self.demand_vector[prev:prev + i]
             price_vector = self.price_vector[prev:prev + i]
             capacity_vector = self.capacity_vector
-            demand_utilization_matrix = self.demand_utilization_matrix
+            demand_utilization_matrix = self.demand_utilization_matrix.ix[prev:prev + i, :]
+            demand_profile = None
+            if self.demand_profile is not None:
+                demand_profile = self.demand_profile.ix[prev:prev + i - 1, :]
             subproblems.append(
                 Problem(demand_vector=demand_vector, price_vector=price_vector, capacity_vector=capacity_vector,
-                        demand_utilization_matrix=demand_utilization_matrix))
+                        demand_utilization_matrix=demand_utilization_matrix, demand_profile=demand_profile))
             prev = i
         return subproblems
 
@@ -103,27 +106,21 @@ def create_problem_with_data(demand_data, capacity_data, demand_utilization_data
                    demand_profile)
 
 
-def merge_sub_problems(subproblems):
+def merge_controls(controls_list):
     first_time = True
-    for problem in subproblems:
+    for controls in controls_list:
         if first_time:
-            demand_vector = problem.demand_vector
-            price_vector = problem.price_vector
-            capacity_vector = problem.capacity_vector
-            demand_utilization_matrix = problem.demand_utilization_matrix
-            demand_profile = problem.demand_profile
+            accepted_demand = controls.accepted_demand
+            product_bid_prices = controls.product_bid_prices
+            expected_revenue = controls.expected_revenue
             first_time = False
         else:
-            demand_vector = demand_vector.append(problem.demand_vector)
-            price_vector = price_vector.append(problem.price_vector)
-            capacity_vector = capacity_vector.append(problem.capacity_vector)
-            demand_utilization_matrix = demand_utilization_matrix.append(problem.demand_utilization_matrix)
-            if demand_profile:
-                demand_profile = demand_profile.append(problem.demand_profile)
+            accepted_demand = accepted_demand.append(controls.accepted_demand)
+            product_bid_prices = product_bid_prices.append(controls.product_bid_prices)
+            expected_revenue = expected_revenue + controls.expected_revenue
 
-    return Problem(demand_vector=demand_vector, price_vector=price_vector,
-                   capacity_vector=capacity_vector, demand_profile=demand_profile,
-                   demand_utilization_matrix=demand_utilization_matrix)
+    return Controls(accepted_demand=accepted_demand, product_bid_prices=product_bid_prices,
+                    expected_revenue=expected_revenue)
 
 
 def load_data_to_df(capacity_data, demand_data, demand_profile_data, demand_utilization_data):
@@ -171,7 +168,7 @@ def get_expected_revenue(revman):
 
 
 def get_accepted_demand(x):
-    return [i.value() for i in x]
+    return [x[str(i)].value() for i in x]
 
 
 def get_bid_prices(capacity_vector, revman):
@@ -180,22 +177,24 @@ def get_bid_prices(capacity_vector, revman):
 
 def add_demand_constraints(demand_vector, revman, x):
     for (demand_index, demand) in (demand_vector.iteritems()):
-        revman.addConstraint((x[demand_index]) <= demand, name="Demand_" + str(demand_index))
+        revman.addConstraint((x[str(demand_index)]) <= demand, name="Demand_" + str(demand_index))
 
 
 def add_product_constraints(capacity_vector, demand_utilization_matrix, demand_vector, revman, x):
     for (product_index, capacity) in (capacity_vector.iterrows()):
         revman.addConstraint(pulp.lpSum(
-            [x[i] * demand_utilization_matrix.ix[i, product_index] for (i, d) in demand_vector.iteritems()]) <=
+            [x[str(i)] * demand_utilization_matrix.ix[i, product_index] for (i, d) in demand_vector.iteritems()]) <=
                              capacity,
                              name="Capa_" + str(product_index))
 
 
 def set_objective(demand_vector, price_vector, revman, x):
-    objective = pulp.LpAffineExpression([(x[i], price_vector[i]) for (i, d) in demand_vector.iteritems()])
+    objective = pulp.LpAffineExpression([(x[str(i)], price_vector[i]) for (i, d) in demand_vector.iteritems()])
     revman.setObjective(objective)
 
 
 def create_variables(demand_vector):
-    x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
+    # x = [pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous) for (i, t) in demand_vector.iteritems()]
+    x = dict([(str(i), pulp.LpVariable(name="x" + str(i), lowBound=0, cat=pulp.LpContinuous)) for (i, t) in
+              demand_vector.iteritems()])
     return x

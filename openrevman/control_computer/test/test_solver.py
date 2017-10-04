@@ -5,7 +5,7 @@ from nose.tools import eq_, assert_greater_equal
 from numpy import array, array_equal
 
 from openrevman.control_computer import solver
-from openrevman.control_computer.solver import merge_sub_problems
+from openrevman.control_computer.solver import merge_controls
 
 
 class TestSolver(TestCase):
@@ -115,11 +115,18 @@ class TestSolver(TestCase):
         problem = solver.create_problem_with_data(d, c, dud, dp)
         eq_(10, problem.price_vector.ix[0, 0])
 
-    def test_merge_subproblems(self):
+    def test_merge_controls(self):
         d = StringIO("1 0 2 4\n10 20 20 5")
         c = self.three_id_capacity
         dud = StringIO("0 1 0\n1 0 0\n1 1 0\n0 0 1")
         dp = StringIO("0 0 0 0\n1 2 2 4")
         problem = solver.create_problem_with_data(d, c, dud, dp)
-        problem2 = merge_sub_problems(problem.get_subproblems())
-        # eq_(problem, problem2)
+        this_solver = solver.Solver(None)
+
+        result1 = this_solver.optimize_controls_multi_period(problem, 0.1)
+
+        sub_controls_list = [this_solver.optimize_controls_multi_period(p, 0.1)
+                             for p in problem.get_subproblems()]
+        result2 = merge_controls(sub_controls_list)
+
+        eq_(result1.expected_revenue, result2.expected_revenue)
