@@ -59,7 +59,7 @@ class Solver:
         return self.controls
 
     def optimize_controls_multi_period(self, problem, eps):
-        if len(problem.demand_profile.shape) > 1:
+        if problem.demand_profile.shape[1] > 1:
             for period in problem.demand_profile.columns:
                 if self.controls:
                     new_control = pulp_solve(problem.demand_profile.ix[:, period], problem.price_vector,
