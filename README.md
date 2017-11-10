@@ -1,6 +1,6 @@
 # openrevman
 
-## Current coverqge
+## Current coverage
 [![Coverage Status](https://coveralls.io/repos/github/3like3beer/openrevman/badge.svg?branch=master)](https://coveralls.io/github/3like3beer/openrevman?branch=master)
 
 ## Install Dev Env
